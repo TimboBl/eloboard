@@ -8,6 +8,7 @@ const playerSchema = new Schema({
     wins: {type: Number},
     losses: {type: Number},
     matches: {type: Array},
+    board: {type: String},
 });
 
 export const PLAYER = model("Player", playerSchema);
