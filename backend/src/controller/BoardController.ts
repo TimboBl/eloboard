@@ -38,6 +38,29 @@ export const BoardController = (mongoService: MongoServiceT) => {
 		});
 	};
 
+	const getBoardByName = (req: Request, res: Response) => {
+		if (!req.query.name) {
+			logger.warn("There was a request for a board without the name parameter");
+			res.status(400).send({message: "Malformed Request"});
+			return;
+		}
+		let brd: any;
+		mongoService.findBoardByName(req.query.name).then(board => {
+			brd = board;
+			const promises = [];
+			for (let i = 0; i < board.players.length; ++i) {
+				promises.push(mongoService.findPlayer(board.players[i].id));
+			}
+			return Promise.all(promises);
+		}).then((values) => {
+			brd.players = values;
+			res.status(200).send({message: "Success", data: brd});
+		}).catch((err: Error) => {
+			logger.error("There was an error getting a board by name!", err);
+			res.status(500).send({message: "Internal Server Error"});
+		});
+	};
+
 	const addPlayerToBoard = (req: Request, res: Response) => {
 		if (!req.body.name || !req.body.board) {
 			logger.warn("There was a request to add a player to a board without a name");
@@ -45,11 +68,18 @@ export const BoardController = (mongoService: MongoServiceT) => {
 			return;
 		}
 
-		mongoService.saveNewPlayer(req.body.name).then((player) => {
-			console.log("PLAYER", player);
-			return mongoService.addPlayerToBoard(req.body.board, {name: player.name, id: player._id})
-		}).then(() => {
-			res.status(200).send({message: "Success"});
+		mongoService.saveNewPlayer(req.body.name, req.body.board).then((player: any) => {
+			if (!player.upserted) {
+				return Promise.resolve("");
+			} else {
+				return mongoService.addPlayerToBoard(req.body.board, {name: req.body.name, id: player.upserted[0]._id});
+			}
+		}).then((ret) => {
+			if (typeof ret === "string") {
+				res.status(409).send({message: "Conflict"});
+			} else {
+				res.status(200).send({message: "Success"});
+			}
 		}).catch((err: Error) => {
 			logger.error("There was an error when adding a player to a board!", err);
 			res.status(500).send({message: "Internal Server Error"});
@@ -75,6 +105,7 @@ export const BoardController = (mongoService: MongoServiceT) => {
 	return {
 		createBoard,
 		getAllBoards,
+		getBoardByName,
 		addPlayerToBoard,
 		deleteBoard,
 	};
