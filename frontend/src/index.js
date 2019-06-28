@@ -7,7 +7,8 @@ import { Provider } from "react-redux";
 import { BrowserRouter, Route } from "react-router-dom";
 import store from "./store";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
-import SingleplayerView from "./container/SingleplayerView";
+import SingleplayerView from "./containers/SingleplayerView";
+import SinglePlayerBoardSelection from "./containers/SinglePlayerBoardSelection";
 
 const theme = createMuiTheme({
 	palette: {
@@ -28,6 +29,7 @@ ReactDOM.render(
 		<MuiThemeProvider theme={theme}>
 			<BrowserRouter>
 				<Route exact={true} path={"/"} component={App}/>
+				<Route exact={true} path={"/singleplayer-select"} component={SinglePlayerBoardSelection}/>
 				<Route exact={true} path={"/singleplayer"} component={SingleplayerView}/>
 			</BrowserRouter>
 		</MuiThemeProvider>
