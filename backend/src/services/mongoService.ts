@@ -26,13 +26,10 @@ export const mongoService = (() => {
 		}, {upsert: true}).exec();
 	};
 
-	const findPlayer = (player: ObjectId) => {
-		return PLAYER.find({_id: player}).exec().then((result) => {
-			if (result[0]) {
-				return result[0];
-			} else {
-				return undefined;
-			}
+	const findPlayer = (playerId: string) => {
+		const id = ObjectId(playerId);
+		return PLAYER.findOne({_id: id}).exec().then((result) => {
+			return result;
 		});
 	};
 
@@ -41,9 +38,9 @@ export const mongoService = (() => {
 		};
 
 
-	const saveNewPlayer = (name: string): Promise<Player> => {
-		return PLAYER.update({"name": name}, {
-			"$set": {"name": name, "score": 1000, "totalGames": 0, "wins": 0, "losses": 0, "matches": []}
+	const saveNewPlayer = (name: string, board: string): Promise<Player> => {
+		return PLAYER.updateOne({"name": name, board}, {
+			"$set": {"name": name, "score": 1000, "totalGames": 0, "wins": 0, "losses": 0, "matches": [], board}
 		}, {upsert: true}).exec();
 	};
 
