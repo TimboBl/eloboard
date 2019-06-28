@@ -3,3 +3,20 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+html, body {
+  background-color: #20bf6b;
+  font-family: Arimo, sans-serif;
+}
+
+footer {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-content: space-between;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+}
