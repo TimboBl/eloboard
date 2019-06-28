@@ -19,9 +19,9 @@ class App extends Component {
 				<img src={logo} alt={"Logo"} width={"100px"}/><br/>
 				Beerpong Leagues<br/>
 				<ModeButton variant={"contained"} color={"primary"} margin={"10% 5px 0 0"}
-							onClick={() => this.props.history.push("/singleplayer")}>Singleplayer</ModeButton>
+							onClick={() => this.props.history.push("/singleplayer-select")}>Singleplayer</ModeButton>
 				<ModeButton variant={"contained"} color={"primary"} margin={"10% 0 0 5px"}
-							onClick={() => this.props.history.push("/multiplayer")}>Multiplayer</ModeButton>
+							onClick={() => this.props.history.push("/multiplayer-select")}>Multiplayer</ModeButton>
 				<Footer/>
 			</div>
 		);
