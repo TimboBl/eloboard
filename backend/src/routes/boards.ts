@@ -6,6 +6,7 @@ export const BoardRouter = (() => {
 
 		router.post("/board", boardController.createBoard);
 		router.get("/board", boardController.getAllBoards);
+		router.get("/board/select", boardController.getBoardByName);
 		router.post("/board/player", boardController.addPlayerToBoard);
 		router.delete("/board", boardController.deleteBoard);
 
