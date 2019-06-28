@@ -1,78 +1,100 @@
 import * as mongoose from "mongoose";
-import {logger} from "../logging/logger";
-import {Player} from "../types/Player";
-import {MATCH, PLAYER} from "../models/Player";
-
-export interface IMatch {
-    winner: string,
-    looser: string,
-    result: string,
-    time: Date
-}
+import { logger } from "../logging/logger";
+import { Player } from "../types/Player";
+import { PLAYER } from "../models/Player";
+import { MONGO_CONNECTION_STRING } from "../config/config";
+import { Types} from "mongoose";
+import ObjectId = Types.ObjectId;
+import { MATCH } from "../models/Match";
+import { BOARD } from "../models/Board";
 
 
 export const mongoService = (() => {
 
-    const updatePlayer = (player: Player, match: IMatch): Promise<Player> => {
+	const updatePlayer = (player: Player, match: ObjectId): Promise<Player> => {
 
-        const update = {
-            "name": player.name,
-            "score": player.score,
-            "totalGames": player.totalGames,
-            "losses": player.losses,
-            "wins": player.wins
-        };
-        return PLAYER.update({"name": player.name}, {
-            "$set": update,
-            "$addToSet": {"matches": match}
-        }, {upsert: true}).exec();
-    };
+		const update = {
+			"name": player.name,
+			"score": player.score,
+			"totalGames": player.totalGames,
+			"losses": player.losses,
+			"wins": player.wins
+		};
+		return PLAYER.update({"_id": player._id}, {
+			"$set": update,
+			"$addToSet": {"matches": match}
+		}, {upsert: true}).exec();
+	};
 
-    const findPlayer = (playerName: string) => {
-        return PLAYER.find({name: playerName}).exec().then((result) => {
-            if (result[0]) {
-                return result[0];
-            } else {
-                return undefined;
-            }
-        });
-    };
+	const findPlayer = (player: ObjectId) => {
+		return PLAYER.find({_id: player}).exec().then((result) => {
+			if (result[0]) {
+				return result[0];
+			} else {
+				return undefined;
+			}
+		});
+	};
 
-    const saveMatch =
-        (match: IMatch) => {
-            return MATCH.update({}, {$set: match}, {upsert: true});
-        };
+	const saveMatch = (match: any) => {
+			return MATCH.update({}, {$set: match}, {upsert: true});
+		};
 
 
-    const saveNewPlayer = (name: string): Promise<Player> => {
-        return PLAYER.update({"name": name}, {
-            "$set": {"name": name, "score": 1000, "totalGames": 0, "wins": 0, "losses": 0, "matches": []}
-        }, {upsert: true}).exec();
-    };
+	const saveNewPlayer = (name: string): Promise<Player> => {
+		return PLAYER.update({"name": name}, {
+			"$set": {"name": name, "score": 1000, "totalGames": 0, "wins": 0, "losses": 0, "matches": []}
+		}, {upsert: true}).exec();
+	};
 
-    const getScores = () => {
-        return PLAYER.find({}, {name: 1, score: 1, _id: 0, matches: 1}).sort({score: -1}).cursor();
-    };
+	const getScores = () => {
+		return PLAYER.find({}, {name: 1, score: 1, _id: 1, matches: 1}).sort({score: -1}).cursor();
+	};
 
-    const mongoMethods = {
-        updatePlayer,
-        saveNewPlayer,
-        findPlayer,
-        getScores,
-        saveMatch,
-    };
-    const init = () => {
-        return new Promise((resolve: Function, reject: Function) => {
-            mongoose.connect(process.env.MONGO || "mongodb://localhost:27017/uptain-board")
-                .then(() => {
-                    logger.info("Connected to mongoDB");
-                    resolve(mongoMethods);
-                }).catch((err: Error) => {
-                logger.error("Could not establish a connection to MongoDB", err);
-                reject();
-            });
-        });
-    };
+	const createBoard = (name: string, type: string) => {
+		return BOARD.updateOne({name}, {"$set": {name, type}}, {upsert: true}).exec();
+	};
 
-    return {init};
+	const findBoardByName = (name: string) => {
+		return BOARD.findOne({name}).exec();
+	};
+
+	const findAllBoards = () => {
+		return BOARD.find({}).exec();
+	};
+
+	const addPlayerToBoard = (name: string, player: {name: string, id: ObjectId}) => {
+		return BOARD.updateOne({name}, {"$addToSet": {"players": player}}).exec();
+	};
+
+	const deleteBoard = (name: string) => {
+		return BOARD.deleteOne({name}).exec();
+	};
+
+	const mongoMethods = {
+		updatePlayer,
+		saveNewPlayer,
+		findPlayer,
+		getScores,
+		saveMatch,
+		createBoard,
+		findBoardByName,
+		findAllBoards,
+		addPlayerToBoard,
+		deleteBoard,
+	};
+	const init = () => {
+		return new Promise((resolve: Function, reject: Function) => {
+			mongoose.connect(MONGO_CONNECTION_STRING)
+				.then(() => {
+					logger.info("Connected to mongoDB");
+					resolve(mongoMethods);
+				}).catch((err: Error) => {
+				logger.error("Could not establish a connection to MongoDB", err);
+				reject();
+			});
+		});
+	};
+
+	return {init};
 })();

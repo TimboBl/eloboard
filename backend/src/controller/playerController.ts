@@ -99,23 +99,9 @@ export const playerController = (mongoDB: any) => {
         return returnValue;
     };
 
-    const updateKPI = (req: Request, res: Response) => {
-        axios.post("https://dashboard.uptain.de/widgets/leader", JSON.stringify({
-            text: req.body.leader,
-            auth_token: process.env.AUTH_TOKEN
-        })).then(() => {
-            logger.debug("Successfully updated KPI monitor");
-            res.status(200).send({message: "Success"});
-        }).catch((err: Error) => {
-            logger.debug("Failed to update KPI monitor", {error: err});
-            res.status(500).send({message: "There was an internal server error"});
-        });
-    };
-
     return {
         updateScore,
         getScores,
         saveNewPlayer,
-        updateKPI
     };
 };
