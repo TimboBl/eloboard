@@ -17,7 +17,7 @@ class App extends Component {
         this.openMatchWindow = this.openMatchWindow.bind(this);
         this.closeMatchWindow = this.closeMatchWindow.bind(this);
         this.render = this.render.bind(this);
-        this.updateKPI = this.updateKPI.bind(this);
+        //this.updateKPI = this.updateKPI.bind(this);
         this.state = {
             rows: [],
             playerWindowOpen: false,
