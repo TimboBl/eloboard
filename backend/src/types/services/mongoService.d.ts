@@ -5,11 +5,11 @@ import ObjectId = Types.ObjectId;
 export interface MongoServiceT {
 	updatePlayer(player: Player, match: ObjectId): Promise<Player>;
 
-	findPlayer(player: ObjectId): Promise<any>;
+	findPlayer(playerId: string): Promise<any>;
 
 	saveMatch(match: any): Promise<any>;
 
-	saveNewPlayer(name: string): Promise<Player>;
+	saveNewPlayer(name: string, board: string): Promise<Player>;
 
 	getScores(): Promise<any>;
 
