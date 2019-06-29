@@ -9,6 +9,8 @@ import store from "./store";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import SingleplayerView from "./containers/SingleplayerView";
 import SinglePlayerBoardSelection from "./containers/SinglePlayerBoardSelection";
+import MultiPlayerBoardSelection from "./containers/MultiPlayerBoardSelection";
+import MultiplayerView from "./containers/MultiplayerView";
 
 const theme = createMuiTheme({
 	palette: {
@@ -31,6 +33,8 @@ ReactDOM.render(
 				<Route exact={true} path={"/"} component={App}/>
 				<Route exact={true} path={"/singleplayer-select"} component={SinglePlayerBoardSelection}/>
 				<Route exact={true} path={"/singleplayer"} component={SingleplayerView}/>
+				<Route exact={true} path={"/multiplayer-select"} component={MultiPlayerBoardSelection}/>
+				<Route exact={true} path={"/multiplayer"} component={MultiplayerView}/>
 			</BrowserRouter>
 		</MuiThemeProvider>
 	</Provider>,

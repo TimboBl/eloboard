@@ -19,8 +19,9 @@ import {
 } from "@material-ui/core";
 import Footer from "../../components/Footer";
 import { SNACKBAR_DURATION } from "../../config/config";
+import Logo from "../../components/Logo";
 
-const logo = require("../../images/logo.jpg");
+const logo = require("../../images/logo.png");
 
 const mapStateToProps = state => {
 	return {
@@ -130,8 +131,7 @@ class ConnectedSinglePlayerBoardSelection extends Component {
 								onClick={() => this.onConfirmClicked()} disabled={!this.state.board_name}>Confirm</Button>
 					</DialogActions>
 				</Dialog>
-				<img src={logo} alt={"Logo"} width={"100px"}/><br/>
-				Beerpong Leagues<br/>
+				<Logo/>
 				<Paper>
 					<Table>
 						<TableHead>
@@ -145,9 +145,8 @@ class ConnectedSinglePlayerBoardSelection extends Component {
 						</TableBody>
 					</Table>
 				</Paper>
-				<Button variant={"contained"} color={"primary"} onClick={() => this.onButtonClick()}>Add new
+				<Button variant={"contained"} color={"primary"} onClick={() => this.onButtonClick()} style={{margin: "10px 0 0 0"}}>Add new
 					Board</Button>
-				<Footer/>
 			</div>
 		);
 	}

@@ -1,10 +1,10 @@
 import axios from "axios";
-import { ADD_PLAYER, BASE_URL, BOARD_SELECT, BOARDS, SINGLE_PLAYER } from "../config/config";
+import { ADD_PLAYER, BASE_URL, BOARD_SELECT, BOARDS, SINGLE_PLAYER, SCORES } from "../config/config";
 import { fetchSingleplayerBoards } from "../actions/singlePlayerActions";
 
 export const getSinglePlayerBoards = () => {
 	return (dispatch) => {
-		return axios.get(BASE_URL + BOARDS).then(result => {
+		return axios.get(BASE_URL + BOARDS, {params: {type: SINGLE_PLAYER}}).then(result => {
 			dispatch(fetchSingleplayerBoards(result.data.data));
 		}).catch(err => {
 			console.log(err);
@@ -46,4 +46,16 @@ export const addPlayerToBoard = (board, name) => {
 		console.log(err);
 		throw err;
 	});
+};
+
+export const recordMatch = (player, opponent, result, match/*{winner: string, looser: string, result: "1:2"}*/) => {
+	return axios.put(BASE_URL + SCORES, {
+		name: player,
+		opponent,
+		result,
+		match,
+	}).then().catch((err => {
+		console.log(err);
+		throw err;
+	}));
 };

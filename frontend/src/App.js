@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import './App.css';
 import { ModeButton } from "./components/ModeButton";
 import Footer from "./components/Footer";
+import Logo from "./components/Logo";
 
-const logo = require("./images/logo.jpg");
 
 class App extends Component {
 
@@ -16,13 +16,11 @@ class App extends Component {
 	render() {
 		return (
 			<div className={"App"}>
-				<img src={logo} alt={"Logo"} width={"100px"}/><br/>
-				Beerpong Leagues<br/>
-				<ModeButton variant={"contained"} color={"primary"} margin={"10% 5px 0 0"}
+				<Logo/>
+				<ModeButton variant={"contained"} color={"primary"} margin={"15% 5px 0 0"}
 							onClick={() => this.props.history.push("/singleplayer-select")}>Singleplayer</ModeButton>
-				<ModeButton variant={"contained"} color={"primary"} margin={"10% 0 0 5px"}
+				<ModeButton variant={"contained"} color={"primary"} margin={"15% 0 0 5px"}
 							onClick={() => this.props.history.push("/multiplayer-select")}>Multiplayer</ModeButton>
-				<Footer/>
 			</div>
 		);
 	}

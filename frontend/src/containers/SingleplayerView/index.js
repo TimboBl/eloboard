@@ -5,9 +5,7 @@ import {
 	TableBody,
 	TableCell,
 	TableRow,
-	TablePagination,
 	TableHead,
-	TableFooter,
 	Paper,
 	Button,
 	Dialog,
@@ -18,10 +16,12 @@ import {
 	Snackbar
 } from "@material-ui/core";
 import _ from "lodash";
-import { addPlayerToBoard, getBoardByName } from "../../network/singleplayer";
+import Select from "react-select";
+import { addPlayerToBoard, getBoardByName, recordMatch } from "../../network/singleplayer";
 import { SNACKBAR_DURATION } from "../../config/config";
+import Logo from "../../components/Logo";
 
-const logo = require("../../images/logo.jpg");
+const logo = require("../../images/logo.png");
 
 class SingleplayerView extends Component {
 	constructor(props) {
@@ -33,7 +33,12 @@ class SingleplayerView extends Component {
 			adding: false,
 			error: false,
 			conflict: false,
+			recording: false,
 			rows: [],
+			selectedOpponent: "",
+			options: [],
+			winner: "",
+			result: "",
 		};
 	}
 
@@ -41,6 +46,11 @@ class SingleplayerView extends Component {
 		getBoardByName(this.props.location.state.board_name).then(result => {
 			this.setState({name: result.name, players: result.players}, () => {
 				this.createRows();
+				const ret = [];
+				for (let i = 0; i < result.players.length; ++i) {
+					ret.push({value: result.players[i]._id, label: result.players[i].name});
+				}
+				this.setState({selectedOpponent: result.players[0] ? result.players[0].name : "", options: ret});
 			});
 		}).catch(err => {
 
@@ -61,9 +71,9 @@ class SingleplayerView extends Component {
 		const ret = [];
 		for (let i = 0; i < this.state.players.length; ++i) {
 			ret.push(
-				<TableRow>
-					<TableCell>{this.state.players[i].name}</TableCell>
-					<TableCell>{this.state.players[i].score}</TableCell>
+				<TableRow onClick={(e) => this.onTableRowClick(e)}>
+					<TableCell id={i}>{this.state.players[i].name}</TableCell>
+					<TableCell id={i}>{this.state.players[i].score}</TableCell>
 				</TableRow>
 			);
 		}
@@ -75,7 +85,7 @@ class SingleplayerView extends Component {
 	}
 
 	onDialogClose() {
-		this.setState({adding: false, player_name: ""});
+		this.setState({adding: false, player_name: "", recording: false});
 	}
 
 	onSnackbarClose() {
@@ -87,7 +97,7 @@ class SingleplayerView extends Component {
 	}
 
 	onKeyPressed(e) {
-		if (e.key === "Enter") {
+		if (e.key === "Enter" && this.state.player_name) {
 			this.onConfirmClicked();
 		}
 	}
@@ -104,6 +114,35 @@ class SingleplayerView extends Component {
 					this.setState({conflict: true});
 				}
 			}
+		})
+	}
+
+	onTableRowClick(e) {
+		this.setState({winner: this.state.players[e.target.id].name, recording: true});
+	}
+
+	onSelectChange(option) {
+		this.setState({selectedOpponent: option});
+	}
+
+	onWinnerChange(option) {
+		this.setState({winner: option});
+	}
+
+	onResultChange(e) {
+		this.setState({result: e.target.value});
+	}
+
+	recordMatch() {
+		recordMatch(this.state.winner.value, this.state.selectedOpponent.value, "win", {
+			winner: this.state.winner.label,
+			looser: this.state.selectedOpponent.label,
+			result: this.state.result
+		}).then(() => {
+			this.setState({recording: false, result: ""});
+			this.refresh();
+		}).catch(err => {
+
 		})
 	}
 
@@ -132,8 +171,28 @@ class SingleplayerView extends Component {
 								disabled={!this.state.player_name}>Confirm</Button>
 					</DialogActions>
 				</Dialog>
-				<img src={logo} alt={"Logo"} width={"100px"}/><br/>
-				Beerpong Leagues<br/><br/>
+				<Dialog open={this.state.recording} onClose={() => this.onDialogClose()}>
+					<DialogTitle>
+						Record a Match Result
+					</DialogTitle>
+					<DialogContent>
+						Winner<br/>
+						<Select value={this.state.winner} onChange={(option) => this.onWinnerChange(option)}
+								options={this.state.options}/>
+						Looser<br/>
+						<Select value={this.state.selectedOpponent} onChange={(option) => this.onSelectChange(option)}
+								options={this.state.options}/>
+						<TextField value={this.state.result} onChange={(e) => this.onResultChange(e)}
+								   label={"Match Result (e.g 2:3)"}/>
+					</DialogContent>
+					<DialogActions style={{margin: "0 auto"}}>
+						<Button onClick={() => this.onDialogClose()} variant={"contained"} color={"secondary"}
+								style={{width: "100px"}}>Cancel</Button>
+						<Button variant={"contained"} color={"primary"} style={{width: "100px"}}
+								onClick={() => this.recordMatch()}>Confirm</Button>
+					</DialogActions>
+				</Dialog>
+				<Logo/><br/>
 				{this.state.name}
 				<Paper>
 					<Table>
@@ -148,7 +207,7 @@ class SingleplayerView extends Component {
 						</TableBody>
 					</Table>
 				</Paper>
-				<Button variant={"contained"} color={"primary"} onClick={() => this.onAddPlayerClicked()}>Add
+				<Button variant={"contained"} color={"primary"} onClick={() => this.onAddPlayerClicked()} style={{margin: "10px 0 0 0"}}>Add
 					Player</Button>
 			</div>
 		);
