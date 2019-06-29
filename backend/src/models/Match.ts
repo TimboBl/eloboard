@@ -3,8 +3,8 @@ import { Types } from "mongoose";
 import ObjectId = Types.ObjectId;
 
 const matchSchema = new Schema({
-	winner: {type: ObjectId},
-	looser: {type: ObjectId},
+	winner: {type: String},
+	looser: {type: String},
 	result: {type: String},
 	date: {type: String},
 	board: {type: String},

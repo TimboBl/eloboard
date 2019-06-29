@@ -7,6 +7,7 @@ interface Player {
     wins: number;
     losses: number;
     totalGames: number;
+    board: string;
     matches: [
         {
             winner: string,

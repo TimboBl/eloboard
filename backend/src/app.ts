@@ -26,7 +26,7 @@ export const startApp = (mongoDB: MongoServiceT) => {
 		logger.debug("Registering routes");
 
 		app.use(access.getRouter());
-		//app.use("/board", scoreKeeping.getRouter(mongoDB));
+		app.use(scoreKeeping.getRouter(mongoDB));
 		app.use(BoardRouter.getRouter(boardController));
 
 		app.listen(process.env.PORT || 3001);
