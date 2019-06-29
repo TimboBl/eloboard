@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "2.0.0",
+  "homepage": "https://timbo.link/beerpong",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.1.3",
