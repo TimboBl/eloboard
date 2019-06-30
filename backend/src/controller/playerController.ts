@@ -23,6 +23,7 @@ export const playerController = (mongoDB: MongoServiceT) => {
 			}).then((opponent: Player) => {
 				opponentPlayer = opponent;
 				newPlayers = updatePlayerScore(oldPlayer, opponent, req.body.result);
+				console.log(newPlayers);
 				return mongoDB.updateTeam(newPlayers.player, match, newPlayers.scoreChangePlayer);
 			}).then(() => {
 				return mongoDB.updateTeam(newPlayers.opponent, match, newPlayers.scoreChangeOpponent);
@@ -84,6 +85,10 @@ export const playerController = (mongoDB: MongoServiceT) => {
 		}
 
 		mongoDB.createTeam(req.body.name, req.body.board).then(() => {
+			return mongoDB.findTeamByName(req.body.name);
+		}).then((team) => {
+			return mongoDB.addPlayerToBoard(req.body.board, {name: team.name, id: team._id});
+		}).then(() => {
 			res.status(200).send({message: "Success"});
 		}).catch((err: Error) => {
 			logger.error("There was an error when creating a team!", err);
@@ -103,6 +108,15 @@ export const playerController = (mongoDB: MongoServiceT) => {
 		}).catch((err: Error) => {
 			logger.error("There was an error when getting all the teams", err)
 		})
+	};
+
+	const getPlayers = (req: Request, res: Response) => {
+		mongoDB.getAllMultiplayer().then(players => {
+			res.status(200).send({message: "Success", data: players});
+		}).catch((err: Error) => {
+			logger.error("There was an error when getting all multiplayers!", err);
+			res.status(500).send({message: "Internal Server Error"});
+		});
 	};
 
 	const updatePlayerScore = (pl: Player, opp: Player, result: number):
@@ -136,8 +150,8 @@ export const playerController = (mongoDB: MongoServiceT) => {
 		pl.totalGames += 1;
 		opp.totalGames += 1;
 
-		returnValue.scoreChangePlayer = playerScore - returnValue.player.score;
-		returnValue.scoreChangeOpponent = opponentScore - returnValue.opponent.score;
+		returnValue.scoreChangePlayer = Math.abs(playerScore - returnValue.player.score);
+		returnValue.scoreChangeOpponent = Math.abs(opponentScore - returnValue.opponent.score) * -1;
 
 		return returnValue;
 	};
@@ -147,5 +161,6 @@ export const playerController = (mongoDB: MongoServiceT) => {
 		getScores,
 		createTeam,
 		getTeams,
+		getPlayers,
 	};
 };

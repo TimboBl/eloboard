@@ -70,8 +70,14 @@ export const mongoService = (() => {
 		}, {upsert: true}).exec();
 	};
 
+	const saveNewPlayerMultiplayer = (name: string, type: string): Promise<Player> => {
+		return PLAYER.updateOne({"name": name}, {
+			"$set": {"name": name, "score": 1000, "totalGames": 0, "wins": 0, "losses": 0, "matches": [], type}
+		}, {upsert: true}).exec();
+	};
+
 	const createTeam = (name: string, board: string) => {
-		return TEAM.updateOne({name}, {"$set": {name, board}}, {upsert: true}).exec();
+		return TEAM.updateOne({name}, {"$set": {name, board, score: 1000}}, {upsert: true}).exec();
 	};
 
 	const getAllTeams = (board: string) => {
@@ -88,16 +94,7 @@ export const mongoService = (() => {
 	};
 
 	const addPlayerToTeam = (name: string, player: { name: string, id: ObjectId }) => {
-		let newMember: any;
-		return TEAM.updateOne({name}, {"$addToSet": {members: player}}).exec().then(() => {
-			return findPlayer(player.id.toHexString())
-		}).then((p) => {
-			newMember = p;
-			return TEAM.findOne({name}).exec();
-		}).then((team: any) => {
-			team.score = team.score ? (team.score + newMember.score) / team.members.length : newMember.score;
-			return TEAM.updateOne({name}, {"$set": {score: team.score}});
-		});
+		return TEAM.updateOne({name}, {"$addToSet": {members: player}}).exec();
 	};
 
 	const getAllMultiplayer = () => {
@@ -132,6 +129,7 @@ export const mongoService = (() => {
 		updatePlayer,
 		updateTeam,
 		saveNewPlayer,
+		saveNewPlayerMultiplayer,
 		createTeam,
 		getAllTeams,
 		findTeamByName,

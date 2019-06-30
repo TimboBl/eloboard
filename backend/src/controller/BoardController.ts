@@ -69,7 +69,7 @@ export const BoardController = (mongoService: MongoServiceT) => {
 	};
 
 	const addPlayerToBoard = (req: Request, res: Response) => {
-		if (!req.body.name || !req.body.board) {
+		if (!req.body.name) {
 			logger.warn("There was a request to add a player to a board without a name");
 			res.status(400).send({message: "Malformed Request"});
 			return;
@@ -77,13 +77,17 @@ export const BoardController = (mongoService: MongoServiceT) => {
 
 		if (req.body.type === MULTIPLAYER_GAME) {
 			let id: any;
+			let name: string;
 			let ret: string;
-			mongoService.saveNewPlayer(req.body.name, req.body.board, MULTIPLAYER_GAME).then((player: any) => {
-				if (!player.upserted) {
+			const promise = req.body.exists ? mongoService.findPlayer(req.body.name) :
+				mongoService.saveNewPlayerMultiplayer(req.body.name, MULTIPLAYER_GAME);
+			promise.then((player: any) => {
+				if (!player.upserted && ! req.body.exists) {
 					ret = "";
 					return Promise.resolve("");
 				} else {
-					id = player.upserted[0]._id;
+					id = req.body.exists ? player._id : player.upserted[0]._id;
+					name = req.body.exists ? player.name : req.body.name;
 					return mongoService.findTeamByName(req.body.team);
 				}
 			}).then((team) => {
@@ -95,7 +99,7 @@ export const BoardController = (mongoService: MongoServiceT) => {
 				if (typeof ret === "string" && ret === "") {
 					res.status(409).send({message: "Conflict"});
 				} else {
-					return mongoService.addPlayerToTeam(req.body.team, {name: req.body.name, id});
+					return mongoService.addPlayerToTeam(req.body.team, {name, id});
 				}
 			}).then(() => {
 				res.status(200).send({message: "Success"});

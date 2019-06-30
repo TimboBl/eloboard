@@ -13,6 +13,8 @@ export interface MongoServiceT {
 
 	saveNewPlayer(name: string, board: string, type: string): Promise<Player>;
 
+	saveNewPlayerMultiplayer(name: string, type: string): Promise<any>;
+
 	createTeam(name: string, board: string): Promise<any>;
 
 	getAllTeams(board: string): Promise<any>;

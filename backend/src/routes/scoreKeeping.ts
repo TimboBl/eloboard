@@ -9,6 +9,7 @@ export const getRouter = (mongoDB: any) => {
     router.put("/scores", playerController.updateScore);
     router.post("/team", playerController.createTeam);
     router.get("/team", playerController.getTeams);
+    router.get("/player", playerController.getPlayers);
 
     return router;
 };
