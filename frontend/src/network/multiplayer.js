@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ADD_PLAYER, BASE_URL, BOARD_SELECT, BOARDS, MULTIPLAYER_GAME, SCORES, TEAM } from "../config/config";
+import { ADD_PLAYER, BASE_URL, BOARD_SELECT, BOARDS, MULTIPLAYER_GAME, PLAYER, SCORES, TEAM } from "../config/config";
 import { fetchMultiplayerBoards } from "../actions/multiplayerActions";
 
 export const getMultiplayerBoards = () => {
@@ -24,12 +24,12 @@ export const addMultiplayerBoard = (name) => {
 	});
 };
 
-export const addPlayerToBoard = (board, name, teamName) => {
+export const addPlayerToBoard = (name, teamName, exists) => {
 	return axios.post(BASE_URL + ADD_PLAYER, {
-		board,
 		name,
 		team: teamName,
-		type: MULTIPLAYER_GAME
+		type: MULTIPLAYER_GAME,
+		exists,
 	}).then(result => {
 		return result.data.data;
 	}).catch(err => {
@@ -67,5 +67,14 @@ export const recordMatch = (player, opponent, result, match/*{winner: string, lo
 		console.log(err);
 		throw err;
 	}));
+};
+
+export const getAllPlayers = () => {
+	return axios.get(BASE_URL + PLAYER).then(result => {
+		return result.data.data;
+	}).catch(err => {
+		console.log(err);
+		throw err;
+	});
 };
 

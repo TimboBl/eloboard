@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { getBoardByName } from "../../network/singleplayer";
-import { addPlayerToBoard, createTeam, getTeams, recordMatch } from "../../network/multiplayer";
+import { addPlayerToBoard, createTeam, getAllPlayers, getTeams, recordMatch } from "../../network/multiplayer";
 import _ from "lodash";
 import {
 	Button,
@@ -16,8 +16,6 @@ import {
 import { MULTIPLAYER_GAME, SNACKBAR_DURATION } from "../../config/config";
 import Select from "react-select";
 import Logo from "../../components/Logo";
-
-const logo = require("../../images/logo.png");
 
 class MultiplayerView extends Component {
 	constructor(props) {
@@ -40,11 +38,15 @@ class MultiplayerView extends Component {
 			team_options: [],
 			teams: [],
 			selectedTeam: "",
+			multiplayers: [],
+			selectedPlayer: "",
+			multiplayer_options: [],
 		};
 	}
 
 	refresh() {
 		getBoardByName(this.props.location.state.board_name).then(result => {
+			result.players.sort((a, b) => b.score - a.score);
 			this.setState({name: result.name, players: result.players}, () => {
 				this.createRows();
 				const ret = [];
@@ -55,13 +57,22 @@ class MultiplayerView extends Component {
 				}
 				this.setState({selectedOpponent: result.players[0] ? result.players[0].name : "", options: ret});
 			});
-			getTeams(this.state.name).then(teams => {
-				const ret = [];
-				for (let i = 0; i < teams.length; ++i) {
-					ret.push({value: i, label: teams[i].name});
-				}
-				this.setState({team_options: ret, teams});
-			})
+			return getTeams(this.state.name);
+		}).then(teams => {
+			const ret = [];
+			for (let i = 0; i < teams.length; ++i) {
+				ret.push({value: i, label: teams[i].name});
+			}
+			this.setState({team_options: ret, teams});
+			return getAllPlayers()
+		}).then(players => {
+			const ret = [];
+			for (let i = 0; i < players.length; ++i) {
+				ret.push(
+					{value: players[i]._id, label: players[i].name}
+				);
+			}
+			this.setState({multiplayers: players, multiplayer_options: ret});
 		}).catch(err => {
 
 		});
@@ -127,22 +138,36 @@ class MultiplayerView extends Component {
 	}
 
 	onConfirmClicked() {
-		addPlayerToBoard(this.state.name, this.state.player_name, this.state.selectedTeam.label).then(() => {
-			this.setState({adding: false, player_name: ""});
-			this.refresh();
-		}).catch(err => {
-			if (err.response) {
-				if (err.response.status === 500) {
-					this.setState({error: true});
-				} else if (err.response.status === 409) {
-					this.setState({conflict: true});
+		if (this.state.player_name) {
+			addPlayerToBoard(this.state.player_name, this.state.selectedTeam.label, false).then(() => {
+				this.setState({adding: false, player_name: ""});
+				this.refresh();
+			}).catch(err => {
+				if (err.response) {
+					if (err.response.status === 500) {
+						this.setState({error: true});
+					} else if (err.response.status === 409) {
+						this.setState({conflict: true});
+					}
 				}
-			}
-		})
+			});
+		} else if (this.state.selectedPlayer !== "") {
+			addPlayerToBoard(this.state.selectedPlayer.value, this.state.selectedTeam.label, true).then(() => {
+				this.setState({adding: false, player_name: ""});
+				this.refresh();
+			}).catch(err => {
+				if (err.response) {
+					if (err.response.status === 500) {
+						this.setState({error: true});
+					} else if (err.response.status === 409) {
+						this.setState({conflict: true});
+					}
+				}
+			});
+		}
 	}
 
 	onTableRowClick(e) {
-		console.log(e.target.id);
 		this.setState({winner: this.state.players[e.target.id].name, recording: true});
 	}
 
@@ -153,6 +178,10 @@ class MultiplayerView extends Component {
 	onTeamChange(option) {
 		this.setState({selectedTeam: option});
 
+	}
+
+	onSelectedPlayerChange(option) {
+		this.setState({selectedPlayer: option});
 	}
 
 	onWinnerChange(option) {
@@ -213,10 +242,15 @@ class MultiplayerView extends Component {
 						Add a new Player to a Team
 					</DialogTitle>
 					<DialogContent>
+						Team<br/>
 						<Select value={this.state.selectedTeam} onChange={(option) => this.onTeamChange(option)}
-								options={this.state.team_options}/>
+								options={this.state.team_options}/><br/>
+						Existing Players<br/>
+						<Select value={this.state.selectedPlayer}
+								onChange={(option) => this.onSelectedPlayerChange(option)}
+								options={this.state.multiplayer_options}/><br/>
 						<TextField value={this.state.player_name} onChange={(e) => this.onPlayerNameChange(e)}
-								   label={"New Teammate"} onKeyDown={(e) => this.onKeyPressed(e)}/>
+								   label={"New Teammate"} onKeyDown={(e) => this.onKeyPressed(e)} style={{marginBottom: "30px"}}/>
 						<Paper>
 							<Table>
 								<TableHead>
@@ -232,8 +266,7 @@ class MultiplayerView extends Component {
 						<Button onClick={() => this.onDialogClose()} variant={"contained"} color={"secondary"}
 								style={{width: "100px"}}>Cancel</Button>
 						<Button variant={"contained"} color={"primary"} style={{width: "100px"}}
-								onClick={() => this.onConfirmClicked()}
-								disabled={!(this.state.player_name)}>Confirm</Button>
+								onClick={() => this.onConfirmClicked()}>Confirm</Button>
 					</DialogActions>
 				</Dialog>
 				<Dialog open={this.state.recording} onClose={() => this.onDialogClose()}>
