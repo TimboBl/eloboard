@@ -29,6 +29,7 @@ class MultiplayerView extends Component {
 			conflict: false,
 			recording: false,
 			creating_team: false,
+			see_scores: false,
 			rows: [],
 			selectedOpponent: "",
 			options: [],
@@ -109,6 +110,14 @@ class MultiplayerView extends Component {
 
 	onCreateTeamClicked() {
 		this.setState({creating_team: true});
+	}
+
+	onSeeScoresClicked() {
+		this.setState({see_scores: true});
+	}
+
+	onSeeScoresClose() {
+		this.setState({see_scores: false});
 	}
 
 	onCreateTeamClose() {
@@ -228,6 +237,22 @@ class MultiplayerView extends Component {
 		return ret;
 	}
 
+	createScoreTable() {
+		const ret = [];
+		if (this.state.multiplayers) {
+			this.state.multiplayers.sort((a, b) => b.score - a.score);
+			for (let i = 0; i < this.state.multiplayers.length; ++i) {
+				ret.push(
+					<TableRow key={i}>
+						<TableCell>{this.state.multiplayers[i].name}</TableCell>
+						<TableCell>{this.state.multiplayers[i].score}</TableCell>
+					</TableRow>
+				);
+			}
+		}
+		return ret;
+	}
+
 	render() {
 		return (
 			<div className={"App"}>
@@ -305,6 +330,30 @@ class MultiplayerView extends Component {
 								onClick={() => this.createTeam()}>Confirm</Button>
 					</DialogActions>
 				</Dialog>
+				<Dialog open={this.state.see_scores} onClose={() => this.onSeeScoresClose()}>
+					<DialogTitle>
+						Player Ranking
+					</DialogTitle>
+					<DialogContent>
+						<Paper>
+							<Table>
+								<TableHead>
+									<TableRow>
+										<TableCell>Name</TableCell>
+										<TableCell>Score</TableCell>
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									{this.createScoreTable()}
+								</TableBody>
+							</Table>
+						</Paper>
+					</DialogContent>
+					<DialogActions style={{margin: "0 auto"}}>
+						<Button onClick={() => this.onSeeScoresClose()} variant={"contained"} color={"secondary"}
+								style={{width: "200px"}}>Close</Button>
+					</DialogActions>
+				</Dialog>
 				<Logo/><br/>
 				{this.state.name}
 				<Paper>
@@ -326,6 +375,8 @@ class MultiplayerView extends Component {
 				<Button variant={"contained"} color={"primary"} onClick={() => this.onAddPlayerClicked()}
 						style={{margin: "10px 0 0 5px", width: "150px"}}>Add
 					Player</Button>
+				<Button variant={"contained"} color={"primary"} onClick={() => this.onSeeScoresClicked()}
+						style={{margin: "10px 0 0 5px", width: "200px"}}>See Player Scores</Button>
 			</div>
 		);
 	}
