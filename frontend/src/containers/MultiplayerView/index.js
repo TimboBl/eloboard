@@ -49,7 +49,9 @@ class MultiplayerView extends Component {
 				this.createRows();
 				const ret = [];
 				for (let i = 0; i < result.players.length; ++i) {
-					ret.push({value: result.players[i]._id, label: result.players[i].name});
+					if (result.players[i]) {
+						ret.push({value: result.players[i]._id, label: result.players[i].name});
+					}
 				}
 				this.setState({selectedOpponent: result.players[0] ? result.players[0].name : "", options: ret});
 			});
@@ -78,12 +80,14 @@ class MultiplayerView extends Component {
 	createRows() {
 		const ret = [];
 		for (let i = 0; i < this.state.players.length; ++i) {
-			ret.push(
-				<TableRow onClick={(e) => this.onTableRowClick(e)} key={i}>
-					<TableCell id={i}>{this.state.players[i].name}</TableCell>
-					<TableCell id={i}>{this.state.players[i].score}</TableCell>
-				</TableRow>
-			);
+			if (this.state.players[i]) {
+				ret.push(
+					<TableRow onClick={(e) => this.onTableRowClick(e)} key={i}>
+						<TableCell id={i}>{this.state.players[i].name}</TableCell>
+						<TableCell id={i}>{this.state.players[i].score}</TableCell>
+					</TableRow>
+				);
+			}
 		}
 		this.setState({rows: ret});
 	}
