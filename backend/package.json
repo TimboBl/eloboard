@@ -38,7 +38,7 @@
     "express": "^4.16.2",
     "jest": "^24.8.0",
     "moment": "^2.24.0",
-    "mongoose": "^5.6.1",
+    "mongoose": "^5.7.5",
     "supertest": "^3.0.0",
     "winston": "^2.4.0"
   }
